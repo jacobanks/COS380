@@ -11,7 +11,7 @@ python3 dfsa-sim.py definition.txt input.txt
 Formated as follows:
 
 ```
-0,1,b 	# 0 represents the current state, 1 is the next state and 'b' is the value
+0,1,b 	# start_state,next_state,input_val
 1,2,a
 #2			# The pound signifies the accepting state and then the state number
 ```
