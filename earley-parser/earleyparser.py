@@ -38,7 +38,7 @@ class Grammar(object):
 			return all(len(self.rules[s]) == 0 for r in self.rules[symbol] for s in r.rhs)
 		return False
 
-class EarleyState(object):
+class State(object):
 	def __init__(self, rule=Rule('<GAMMA>', ['S']), dot=0, sent_pos=0, chart_pos=0, back_pointers=[]):
 		self.rule = rule
 		self.dot = dot
@@ -47,7 +47,7 @@ class EarleyState(object):
 		self.back_pointers = back_pointers
 
 	def __eq__(self, other):
-		if type(other) is EarleyState:
+		if type(other) is State:
 			return self.rule == other.rule and self.dot == other.dot and self.sent_pos == other.sent_pos
 		return False
 
@@ -70,28 +70,23 @@ class EarleyParse(object):
 	def __init__(self, sentence, grammar):
 		self.words = sentence.split()
 		self.grammar = grammar
-		self.chart = [(ChartEntry([]) if i > 0 else ChartEntry([EarleyState()])) for i in range(len(self.words) + 1)]
+		# Initalize chart with empty states
+		self.chart = [(ChartEntry([]) if i > 0 else ChartEntry([State()])) for i in range(len(self.words) + 1)]
 
 	def predictor(self, state, pos):
 		for rule in self.grammar[state.next()]:
-			self.chart[pos].add(EarleyState(rule, dot=0,
-				sent_pos=state.chart_pos, chart_pos=state.chart_pos))
+			self.chart[pos].add(State(rule, dot=0, sent_pos=state.chart_pos, chart_pos=state.chart_pos))
 
 	def scanner(self, state, pos):
 		if state.chart_pos < len(self.words):
 			word = self.words[state.chart_pos]
 			if any((word in r) for r in self.grammar[state.next()]):
-				self.chart[pos + 1].add(EarleyState(Rule(state.next(), [word]),
-					dot=1, sent_pos=state.chart_pos,
-					chart_pos=(state.chart_pos + 1)))
+				self.chart[pos + 1].add(State(Rule(state.next(), [word]), dot=1, sent_pos=state.chart_pos, chart_pos=(state.chart_pos + 1)))
 
 	def completer(self, state, pos):
 		for prev_state in self.chart[state.sent_pos]:
 			if prev_state.next() == state.rule.lhs:
-				self.chart[pos].add(EarleyState(prev_state.rule,
-					dot=(prev_state.dot + 1), sent_pos=prev_state.sent_pos,
-					chart_pos=pos,
-					back_pointers=(prev_state.back_pointers + [state])))
+				self.chart[pos].add(State(prev_state.rule, dot=(prev_state.dot + 1), sent_pos=prev_state.sent_pos, chart_pos=pos, back_pointers=(prev_state.back_pointers + [state])))
 
 	def parse(self):
 		for i in range(len(self.chart)):
