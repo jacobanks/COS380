@@ -20,7 +20,7 @@ class NFSA:
                 if current_input in self.transition_fn[self.current_state[0]]:
                     for item in self.transition_fn[self.current_state[0]][current_input]:
                         agenda.append([item, index + 1])
-                        
+
             if len(agenda) == 0:
                 return False
             else:
