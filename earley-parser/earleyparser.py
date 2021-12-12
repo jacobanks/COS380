@@ -100,11 +100,11 @@ class EarleyParse(object):
 				else:
 					self.completer(state, i)
 
-			test = self.get_tree()
-			if test is not None:
-				test.pretty_print()
-			else:
-				print('No parse found')
+			# test = self.get_tree()
+			# if test is not None:
+			# 	test.pretty_print()
+			# else:
+			# 	print('No parse found')
 
 	def get_tree(self):
 		def get_helper(state):
@@ -125,7 +125,7 @@ if __name__ == '__main__':
 
 	grammar = Grammar.load_grammar(args.grammar_file)
 
-	sentence = 'do I prefer that flight through Houston'
+	sentence = 'I prefer that flight through Houston'
 
 	parse = EarleyParse(sentence, grammar)
 	parse.parse()
