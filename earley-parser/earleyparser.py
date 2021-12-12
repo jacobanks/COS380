@@ -1,6 +1,7 @@
 import argparse
 from collections import defaultdict
 from nltk.tree import Tree
+import nltk
 
 class Rule(object):
 	def __init__(self, lhs, rhs):
@@ -99,6 +100,12 @@ class EarleyParse(object):
 				else:
 					self.completer(state, i)
 
+			test = self.get_tree()
+			if test is not None:
+				test.pretty_print()
+			else:
+				print('No parse found')
+
 	def get_tree(self):
 		def get_helper(state):
 			if self.grammar.is_tag(state.rule.lhs):
@@ -118,7 +125,7 @@ if __name__ == '__main__':
 
 	grammar = Grammar.load_grammar(args.grammar_file)
 
-	sentence = 'book that flight'
+	sentence = 'do I prefer that flight through Houston'
 
 	parse = EarleyParse(sentence, grammar)
 	parse.parse()

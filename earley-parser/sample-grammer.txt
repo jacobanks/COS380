@@ -13,5 +13,5 @@ Noun -> book | flight | meal | money
 Verb -> book | include | prefer
 Pronoun -> I | she | he
 Proper -> Houston | NWA
-Aux -> does
+Aux -> does | do
 Preposition -> from | to | on | near | through
