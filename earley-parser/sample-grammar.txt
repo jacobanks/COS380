@@ -8,10 +8,10 @@ VP -> Verb | Verb NP | Verb NP PP | Verb PP | VP PP
 
 PP -> Preposition NP
 
-Det -> that | this | a
-Noun -> book | flight | meal | money
-Verb -> book | include | prefer
-Pronoun -> I | she | he
-Proper -> Houston | NWA
+Det -> that | this | a | the
+Noun -> book | flight | meal | money | best
+Verb -> book | include | prefer | is
+Pronoun -> I | she | he 
+Proper -> Houston | Indiana | Upland
 Aux -> does | do
 Preposition -> from | to | on | near | through

@@ -2,6 +2,12 @@ import argparse
 from collections import defaultdict
 from nltk.tree import Tree
 import nltk
+from nltk.draw.util import Canvas
+from nltk.draw import TreeWidget
+from nltk.draw.util import CanvasFrame
+import time
+
+cf = CanvasFrame()
 
 class Rule(object):
 	def __init__(self, lhs, rhs):
@@ -63,6 +69,12 @@ class ChartEntry(object):
 	def __iter__(self):
 		return iter(self.states)
 
+	def __getitem__(self, i):
+		return self.states[i]
+	
+	def __len__(self):
+		return len(self.states)
+
 	def add(self, state):
 		if state not in self.states:
 			self.states.append(state)
@@ -92,29 +104,34 @@ class EarleyParse(object):
 	def parse(self):
 		for i in range(len(self.chart)):
 			for state in self.chart[i]:
-				if not len(state.rule) == state.dot:
+				if not len(state.rule) == state.dot: 		# if not complete
 					if self.grammar.is_tag(state.next()):
 						self.scanner(state, i)
 					else:
 						self.predictor(state, i)
 				else:
 					self.completer(state, i)
+				
+				# Animate parse tree
+				if len(state.rule) == state.dot and state.rule.lhs != '<GAMMA>' and state.chart_pos == i:
+					self.make_tree(state).pretty_print()
+					tree = self.make_tree(state)
+					tc = TreeWidget(cf.canvas(), tree, node_font=('helvetica', -15, 'bold'), leaf_font=('helvetica', -15))
+					cf.add_widget(tc)
+					cf.canvas().update()
+					time.sleep(1.5)
+					cf.remove_widget(tc)
+					tc.destroy()
 
-			# test = self.get_tree()
-			# if test is not None:
-			# 	test.pretty_print()
-			# else:
-			# 	print('No parse found')
+	def make_tree(self, state):
+		if self.grammar.is_tag(state.rule.lhs):
+			return Tree(state.rule.lhs, [state.rule.rhs[0]])
+		return Tree(state.rule.lhs, [self.make_tree(s) for s in state.back_pointers])
 
 	def get_tree(self):
-		def get_helper(state):
-			if self.grammar.is_tag(state.rule.lhs):
-				return Tree(state.rule.lhs, [state.rule.rhs[0]])
-			return Tree(state.rule.lhs, [get_helper(s) for s in state.back_pointers])
-
 		for state in self.chart[-1]:
 			if len(state.rule) == state.dot and state.rule.lhs == 'S' and state.sent_pos == 0 and state.chart_pos == len(self.words):
-				return get_helper(state)
+				return self.make_tree(state)
 		return None
 		
 if __name__ == '__main__':
@@ -125,7 +142,9 @@ if __name__ == '__main__':
 
 	grammar = Grammar.load_grammar(args.grammar_file)
 
-	sentence = 'I prefer that flight through Houston'
+	sentence = 'book that flight'
+	# sentence = 'does he prefer that flight through Indiana'
+	# sentence = 'this meal is the best'
 
 	parse = EarleyParse(sentence, grammar)
 	parse.parse()
@@ -134,6 +153,8 @@ if __name__ == '__main__':
 		print(sentence + '\n')
 	else:
 		if args.draw:
-			parse.draw()
+			tc = TreeWidget(cf.canvas(), parse, node_font=('helvetica', -15, 'bold'), leaf_font=('helvetica', -15))
+			cf.add_widget(tc)
+			cf.mainloop()
 		else:
 			parse.pretty_print()
