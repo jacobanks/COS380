@@ -1,8 +1,6 @@
 import argparse
 from collections import defaultdict
 from nltk.tree import Tree
-import nltk
-from nltk.draw.util import Canvas
 from nltk.draw import TreeWidget
 from nltk.draw.util import CanvasFrame
 import time
@@ -62,6 +60,9 @@ class State(object):
 		if self.dot < len(self.rule):
 			return self.rule[self.dot]
 
+	def is_complete(self):
+		return len(self.rule) == self.dot
+
 class ChartEntry(object):
 	def __init__(self, states):
 		self.states = states
@@ -104,7 +105,7 @@ class EarleyParse(object):
 	def parse(self):
 		for i in range(len(self.chart)):
 			for state in self.chart[i]:
-				if not len(state.rule) == state.dot: 		# if not complete
+				if not state.is_complete(): 		# if not complete
 					if self.grammar.is_tag(state.next()):
 						self.scanner(state, i)
 					else:
@@ -113,7 +114,7 @@ class EarleyParse(object):
 					self.completer(state, i)
 				
 				# Animate parse tree
-				if len(state.rule) == state.dot and state.rule.lhs != '<GAMMA>' and state.chart_pos == i:
+				if state.is_complete() and state.rule.lhs != '<GAMMA>' and state.chart_pos == i:
 					self.make_tree(state).pretty_print()
 					tree = self.make_tree(state)
 					tc = TreeWidget(cf.canvas(), tree, node_font=('helvetica', -15, 'bold'), leaf_font=('helvetica', -15))
@@ -130,7 +131,7 @@ class EarleyParse(object):
 
 	def get_tree(self):
 		for state in self.chart[-1]:
-			if len(state.rule) == state.dot and state.rule.lhs == 'S' and state.sent_pos == 0 and state.chart_pos == len(self.words):
+			if state.is_complete() and state.rule.lhs == 'S' and state.sent_pos == 0 and state.chart_pos == len(self.words):
 				return self.make_tree(state)
 		return None
 		
